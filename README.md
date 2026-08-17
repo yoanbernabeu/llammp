@@ -94,8 +94,8 @@ snaps back within 12 px.
 
 ## What works, and what cannot
 
-The scope is not a matter of taste: it follows what Music.app actually exposes, measured
-in `spikes/`.
+The scope is not a matter of taste: it follows what Music.app's scripting interface
+actually exposes, measured rather than assumed.
 
 | Feature | Status | |
 |---|---|---|
@@ -147,8 +147,6 @@ app/
     vis.js           audio capture and analysis
   skin/loader.js     .wsz unpacking, VISCOLOR / PLEDIT / REGION
 sidecar/             Swift bridge to Music.app
-docs/                PRD, spec, gap analysis
-spikes/              feasibility reports (M0, F4)
 ```
 
 ### Releasing

@@ -20,3 +20,6 @@ spikes/m0/listener
 
 # Apple's scripting dictionary, copied from Music.app — not ours to redistribute
 spikes/m0/Music.sdef
+
+# Internal working documents: product spec, gap analysis. Kept locally, not published.
+docs/*.md
