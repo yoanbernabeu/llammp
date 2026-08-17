@@ -2,7 +2,7 @@
 #
 # Llammp installer.
 #
-#   curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/llamp/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/llammp/main/install.sh | bash
 #
 # Downloads the latest release, installs it into /Applications and clears the macOS
 # quarantine flag. Llammp is distributed only through GitHub and is not notarized by
@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-REPO="${LLAMMP_REPO:-yoanbernabeu/llamp}"
+REPO="${LLAMMP_REPO:-yoanbernabeu/llammp}"
 APP_NAME="Llammp.app"
 INSTALL_DIR="${LLAMMP_INSTALL_DIR:-/Applications}"
 TMP_DIR="$(mktemp -d)"

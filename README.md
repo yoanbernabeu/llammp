@@ -4,7 +4,7 @@
 
 **A Winamp 2 client for macOS that drives Apple Music.**
 
-[![CI](https://github.com/yoanbernabeu/llamp/actions/workflows/ci.yml/badge.svg)](https://github.com/yoanbernabeu/llamp/actions/workflows/ci.yml)
+[![CI](https://github.com/yoanbernabeu/llammp/actions/workflows/ci.yml/badge.svg)](https://github.com/yoanbernabeu/llammp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![macOS 14.2+](https://img.shields.io/badge/macOS-14.2%2B-black?logo=apple)
 
@@ -38,7 +38,7 @@ All the value is in the fidelity to the Winamp of 1997 — a 275×116 window, or
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/llamp/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/llammp/main/install.sh | bash
 ```
 
 The installer pulls the latest release, drops it into `/Applications` and **clears the
