@@ -621,6 +621,17 @@ ipcMain.on('close-onboarding', () => {
   if (onboardingWin && !onboardingWin.isDestroyed()) onboardingWin.close()
 })
 
+// The renderer is the only place that knows whether capture really yields a live audio
+// track. A permission can read as granted while the track arrives dead.
+ipcMain.on('visualizer-status', (_e, status) => {
+  if (status.level !== undefined) {
+    console.log('[vis] signal level =', status.level.toFixed(4),
+      status.level > 0.001 ? '(audio is flowing)' : '(SILENT — system audio not captured)')
+  } else {
+    console.log('[vis]', status.ok ? 'running' : `not running — ${status.error}`)
+  }
+})
+
 ipcMain.on('show-onboarding', () => createOnboardingWindow())
 
 // Screen recording consent is only picked up by a fresh process, so offering the restart
@@ -636,6 +647,7 @@ ipcMain.on('window-minimize', () => win && win.minimize())
 // --- Lifecycle -------------------------------------------------------------
 
 app.whenReady().then(() => {
+  console.log('[perm] getMediaAccessStatus(screen) =', systemPreferences.getMediaAccessStatus('screen'))
   ensureUserSkinsDir()
   installDisplayMediaHandler()
   createWindow()

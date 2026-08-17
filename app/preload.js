@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('llammp', {
   openSettings: (pane) => ipcRenderer.send('open-settings', pane),
   showOnboarding: () => ipcRenderer.send('show-onboarding'),
   restartApp: () => ipcRenderer.send('restart-app'),
+  reportVisualizer: (status) => ipcRenderer.send('visualizer-status', status),
   closeOnboarding: () => ipcRenderer.send('close-onboarding'),
 
   // Frameless windows are moved by hand. Deltas are cumulative from the start of the

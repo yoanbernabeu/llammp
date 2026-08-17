@@ -603,5 +603,16 @@ window.llammp.onSidecarError((e) => {
   window.llammp.ready()
 
   const ok = await vis.start()
-  if (!ok) console.warn('[vis]', vis.error)
+  window.llammp.reportVisualizer({ ok, error: vis.error })
+
+  // A live track can still carry pure silence when system-audio consent is missing while
+  // screen consent is granted. Only a real level measurement tells the two apart.
+  if (ok) {
+    setTimeout(() => {
+      let peak = 0
+      for (const v of vis.spectrum(19)) peak = Math.max(peak, v)
+      for (const v of vis.waveform(64)) peak = Math.max(peak, Math.abs(v))
+      window.llammp.reportVisualizer({ ok: true, level: peak })
+    }, 4000)
+  }
 })()
