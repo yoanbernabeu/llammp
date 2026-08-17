@@ -1,0 +1,42 @@
+{
+  "name": "llammp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Winamp 2 client for macOS that drives Apple Music",
+  "author": "Yoan Bernabeu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoanbernabeu/Llammp.git"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "lint": "standard main.js devtools.js preload.js skin/*.js renderer/*.js",
+    "lint:fix": "standard --fix main.js devtools.js preload.js skin/*.js renderer/*.js",
+    "build:sidecar": "../sidecar/build.sh",
+    "build:sidecar:universal": "LLAMMP_UNIVERSAL=1 ../sidecar/build.sh",
+    "package": "npm run build:sidecar && npm run --silent pack:arm64",
+    "package:universal": "npm run build:sidecar:universal && npm run --silent pack:universal",
+    "pack:arm64": "electron-packager . Llammp --platform=darwin --arch=arm64 --extend-info=Info.extra.plist --extra-resource=../assets --asar.unpackDir=bin --out=dist --overwrite --ignore=\"^/dist$\"",
+    "pack:universal": "electron-packager . Llammp --platform=darwin --arch=universal --extend-info=Info.extra.plist --extra-resource=../assets --asar.unpackDir=bin --out=dist --overwrite --ignore=\"^/dist$\""
+  },
+  "standard": {
+    "env": [
+      "browser",
+      "node"
+    ],
+    "ignore": [
+      "dist/",
+      "bin/"
+    ]
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.4.0",
+    "electron": "^43.4.0",
+    "standard": "^17.1.2"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}

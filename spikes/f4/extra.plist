@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Voie de production F4 : requis par CoreAudio Tap sur macOS >= 14.2.
+	     Sans cette cle, la piste audio est livree morte, sans erreur. -->
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Llama analyse le son du systeme pour animer son visualiseur.</string>
+</dict>
+</plist>

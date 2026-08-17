@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Requis par CoreAudio Tap sur macOS >= 14.2 pour la capture du son systeme.
+	     Sans cette cle, la piste audio est livree morte, sans erreur (RAPPORT-F4 §5). -->
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Llammp analyse le son du système pour animer son visualiseur.</string>
+
+	<!-- Llammp pilote Music.app par Apple Events. -->
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Llammp pilote Music.app pour afficher et commander la lecture.</string>
+
+	<!-- Pas d'icone dans le Dock : Llammp est une telecommande flottante, comme Winamp. -->
+	<key>LSUIElement</key>
+	<false/>
+</dict>
+</plist>

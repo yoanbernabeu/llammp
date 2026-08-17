@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint JavaScript
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run lint
+        working-directory: app
+
+  sidecar:
+    name: Build sidecar (universal)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: LLAMMP_UNIVERSAL=1 ./sidecar/build.sh
+      - name: Check both architectures are present
+        run: |
+          lipo -info app/bin/llammp-sidecar
+          lipo -info app/bin/llammp-sidecar | grep -q arm64
+          lipo -info app/bin/llammp-sidecar | grep -q x86_64
+
+  package:
+    name: Package app
+    runs-on: macos-14
+    needs: [lint, sidecar]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run package:universal
+        working-directory: app
+      - name: Check the bundle is complete
+        run: |
+          APP=app/dist/Llammp-darwin-universal/Llammp.app
+          test -x "$APP/Contents/Resources/app.asar.unpacked/bin/llammp-sidecar"
+          /usr/libexec/PlistBuddy -c "Print :NSAudioCaptureUsageDescription" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :NSAppleEventsUsageDescription" "$APP/Contents/Info.plist"
+
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: shellcheck install.sh sidecar/build.sh

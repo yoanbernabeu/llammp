@@ -1,0 +1,20 @@
+<meta charset="utf-8">
+<title>Llammp — Égaliseur</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 275px; height: 116px;
+    overflow: hidden;
+    background: transparent;
+    image-rendering: pixelated;
+    -webkit-user-select: none; user-select: none;
+    cursor: default;
+  }
+  #screen { display: block; width: 275px; height: 116px; image-rendering: pixelated; }
+</style>
+
+<!-- L'egaliseur de Music.app n'est ni activable ni lisible par script : la fenetre est
+     decorative. Le tooltip l'explique sans abimer le rendu du skin. -->
+<canvas id="screen" width="275" height="116"
+        title="Égaliseur décoratif : Music.app n'autorise ni l'activation de son égaliseur, ni la lecture du préréglage actif."></canvas>
+<script type="module" src="./eq.js"></script>

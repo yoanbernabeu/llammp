@@ -1,0 +1,14 @@
+{
+  "name": "f4-loopback-spike",
+  "version": "0.0.0",
+  "private": true,
+  "description": "M0/F4 spike jetable : la capture loopback Electron produit-elle du signal ?",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^43.4.0"
+  }
+}

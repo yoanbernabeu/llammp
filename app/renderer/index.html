@@ -1,0 +1,54 @@
+<meta charset="utf-8">
+<title>Llammp</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 275px;
+    height: 116px;
+    overflow: hidden;
+    background: transparent;
+    image-rendering: pixelated;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+  }
+  #screen {
+    display: block;
+    width: 275px;
+    height: 116px;
+    image-rendering: pixelated;
+  }
+  #screen.hidden { display: none; }
+
+  /* Shown until a skin is available. Llammp ships without one. */
+  #welcome {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    background: #1c1f2b;
+    border: 1px solid #3a4055;
+    color: #cbd2e6;
+    font: 11px/1.35 -apple-system, system-ui, sans-serif;
+  }
+  #welcome.hidden { display: none; }
+  #welcome strong { color: #7ee787; font-size: 12px; }
+  #welcome a { color: #79b8ff; }
+  #welcome.drop { background: #24304a; border-color: #7ee787; }
+</style>
+
+<canvas id="screen" width="275" height="116" class="hidden"></canvas>
+
+<div id="welcome">
+  <strong>Drop a Winamp skin here</strong>
+  <span>Llammp ships with no skin. Grab a <code>.wsz</code> from
+    <a href="https://skins.webamp.org" target="_blank" rel="noreferrer">skins.webamp.org</a>
+    and drop it on this window.</span>
+</div>
+
+<script type="module" src="./app.js"></script>

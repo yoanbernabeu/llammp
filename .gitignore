@@ -1,0 +1,22 @@
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+
+# Compiled sidecar binary — built by sidecar/build.sh
+app/bin/
+
+# Winamp skins are third-party artwork and are not redistributed with Llammp.
+# See README.md for where to download them.
+*.wsz
+
+# Throwaway feasibility spikes
+spikes/f4/node_modules/
+spikes/f4/dist/
+
+# Compiled spike binary
+spikes/m0/listener
+
+# Apple's scripting dictionary, copied from Music.app — not ours to redistribute
+spikes/m0/Music.sdef

@@ -1,0 +1,101 @@
+name: Release
+
+# SemVer tags only: v1.2.3, plus pre-releases such as v1.2.3-beta.1.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, e.g. v0.2.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "number=${VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+        working-directory: app
+
+      - name: Lint
+        run: npm run lint
+        working-directory: app
+
+      # The tag is the single source of truth for the version; package.json follows it.
+      - name: Sync package.json version with the tag
+        working-directory: app
+        run: npm version "${{ steps.version.outputs.number }}" --no-git-tag-version --allow-same-version
+
+      - name: Package (universal)
+        run: npm run package:universal
+        working-directory: app
+
+      - name: Verify the bundle
+        run: |
+          APP=app/dist/Llammp-darwin-universal/Llammp.app
+          test -x "$APP/Contents/Resources/app.asar.unpacked/bin/llammp-sidecar"
+          lipo -info "$APP/Contents/Resources/app.asar.unpacked/bin/llammp-sidecar"
+          /usr/libexec/PlistBuddy -c "Print :NSAudioCaptureUsageDescription" "$APP/Contents/Info.plist"
+
+      # ditto preserves symlinks and resource forks; a plain `zip` corrupts .app bundles.
+      - name: Create archive
+        id: archive
+        run: |
+          NAME="Llammp-${{ steps.version.outputs.tag }}-macos-universal.zip"
+          ditto -c -k --sequesterRsrc --keepParent \
+            app/dist/Llammp-darwin-universal/Llammp.app "$NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          shasum -a 256 "$NAME" | tee "$NAME.sha256"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Llammp ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
+          files: |
+            ${{ steps.archive.outputs.name }}
+            ${{ steps.archive.outputs.name }}.sha256
+          body: |
+            ## Install
+
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
+            ```
+
+            The installer clears the macOS quarantine flag for you. Llammp is signed
+            ad-hoc and **not notarized**, so downloading the archive by hand requires
+            running `xattr -dr com.apple.quarantine /Applications/Llammp.app` yourself.
+
+            ## First launch
+
+            1. **Automation → Music** — a dialog appears, click OK. Until then Llammp
+               shows `MUSIC.APP CLOSED` even while Music is playing.
+            2. **Screen & System Audio Recording** — enable Llammp by hand in System
+               Settings › Privacy & Security. Required for the visualizer only.
+
+            Llammp ships with no skin: drop a `.wsz` onto the window, or right-click →
+            *Add a skin…*. See <https://skins.webamp.org>.
