@@ -15,6 +15,7 @@ const els = {
   aeState: document.getElementById('aeState'),
   screen: document.getElementById('screen'),
   screenSettings: document.getElementById('screenSettings'),
+  screenRestart: document.getElementById('screenRestart'),
   screenState: document.getElementById('screenState'),
   hint: document.getElementById('hint'),
   allDone: document.getElementById('allDone'),
@@ -29,9 +30,12 @@ const AE_LABELS = {
   unknown: 'Unknown state'
 }
 
+// macOS reports "denied" both when the box is unticked AND when it was just ticked but
+// the app has not been restarted — the two are indistinguishable from here. Saying
+// "refused" would be wrong half the time, and would leave the user with no way out.
 const SCREEN_LABELS = {
   granted: '',
-  denied: 'Refused — tick the box in System Settings',
+  denied: 'Tick the box, then reopen Llammp',
   'not-determined': 'Not granted yet',
   restricted: 'Restricted by this Mac’s configuration'
 }
@@ -81,6 +85,7 @@ els.aeAllow.addEventListener('click', () => {
 
 els.aeSettings.addEventListener('click', () => window.llammp.openSettings('automation'))
 els.screenSettings.addEventListener('click', () => window.llammp.openSettings('screen'))
+els.screenRestart.addEventListener('click', () => window.llammp.restartApp())
 els.close.addEventListener('click', () => window.llammp.closeOnboarding())
 
 // Ticking a box in System Settings raises no event, so poll while this window is open.

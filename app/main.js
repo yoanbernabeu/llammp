@@ -623,6 +623,13 @@ ipcMain.on('close-onboarding', () => {
 
 ipcMain.on('show-onboarding', () => createOnboardingWindow())
 
+// Screen recording consent is only picked up by a fresh process, so offering the restart
+// is the only way out of that state from inside the app.
+ipcMain.on('restart-app', () => {
+  app.relaunch()
+  app.quit()
+})
+
 ipcMain.on('window-close', () => app.quit())
 ipcMain.on('window-minimize', () => win && win.minimize())
 

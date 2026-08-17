@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('llammp', {
   audioPermission: () => ipcRenderer.invoke('audio-permission'),
   openSettings: (pane) => ipcRenderer.send('open-settings', pane),
   showOnboarding: () => ipcRenderer.send('show-onboarding'),
+  restartApp: () => ipcRenderer.send('restart-app'),
   closeOnboarding: () => ipcRenderer.send('close-onboarding'),
 
   // Frameless windows are moved by hand. Deltas are cumulative from the start of the
