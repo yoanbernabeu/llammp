@@ -35,7 +35,7 @@ for tool in curl unzip; do
     command -v "$tool" >/dev/null || die "$tool is required but not installed."
 done
 
-info "Looking up the latest release…"
+info "Looking up the latest release..."
 API="https://api.github.com/repos/${REPO}/releases/latest"
 ASSET_URL="$(curl -fsSL "$API" \
     | grep -o '"browser_download_url": *"[^"]*Llammp[^"]*\.zip"' \
@@ -46,10 +46,10 @@ ASSET_URL="$(curl -fsSL "$API" \
 VERSION="$(basename "$(dirname "$ASSET_URL")")"
 info "Found ${VERSION}"
 
-info "Downloading…"
+info "Downloading..."
 curl -fsSL --progress-bar -o "$TMP_DIR/llammp.zip" "$ASSET_URL"
 
-info "Extracting…"
+info "Extracting..."
 unzip -q "$TMP_DIR/llammp.zip" -d "$TMP_DIR"
 
 SRC="$(find "$TMP_DIR" -maxdepth 2 -name "$APP_NAME" -type d | head -1)"
@@ -57,16 +57,16 @@ SRC="$(find "$TMP_DIR" -maxdepth 2 -name "$APP_NAME" -type d | head -1)"
 
 DEST="$INSTALL_DIR/$APP_NAME"
 if [[ -d "$DEST" ]]; then
-    info "Removing the previous version…"
+    info "Removing the previous version..."
     rm -rf "$DEST" 2>/dev/null || sudo rm -rf "$DEST"
 fi
 
-info "Installing to $INSTALL_DIR…"
+info "Installing to ${INSTALL_DIR}..."
 cp -R "$SRC" "$DEST" 2>/dev/null || sudo cp -R "$SRC" "$DEST"
 
 # Gatekeeper marks anything downloaded from the internet. Llammp is signed ad-hoc, not
 # notarized, so the flag has to go or the app will not open at all.
-info "Clearing the quarantine flag…"
+info "Clearing the quarantine flag..."
 xattr -dr com.apple.quarantine "$DEST" 2>/dev/null || sudo xattr -dr com.apple.quarantine "$DEST"
 
 bold "Done — Llammp is installed."
@@ -79,6 +79,6 @@ echo "    2. Screen & System Audio Recording  →  enable Llammp by hand in"
 echo "       System Settings › Privacy & Security. Needed for the visualizer only."
 echo
 echo "  Llammp ships with no skin. Drop a .wsz from https://skins.webamp.org"
-echo "  onto the window, or right-click → Add a skin…"
+echo "  onto the window, or right-click > Add a skin..."
 echo
 echo "  Open it with:  open -a Llammp"

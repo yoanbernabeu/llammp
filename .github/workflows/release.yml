@@ -99,3 +99,27 @@ jobs:
 
             Llammp ships with no skin: drop a `.wsz` onto the window, or right-click →
             *Add a skin…*. See <https://skins.webamp.org>.
+
+  # Runs the installer for real against the release that was just published. Linting the
+  # script is not enough: a broken installer only shows up when it runs end to end.
+  install-smoke:
+    name: Install from the published release
+    runs-on: macos-14
+    needs: release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run install.sh into a temporary directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/apps"
+          LLAMMP_INSTALL_DIR="$RUNNER_TEMP/apps" bash install.sh
+      - name: Verify what landed on disk
+        run: |
+          APP="$RUNNER_TEMP/apps/Llammp.app"
+          test -d "$APP"
+          test -x "$APP/Contents/Resources/app.asar.unpacked/bin/llammp-sidecar"
+          lipo -info "$APP/Contents/Resources/app.asar.unpacked/bin/llammp-sidecar" | grep -q arm64
+          # The quarantine flag must be gone, or macOS refuses to open the app at all.
+          if xattr -p com.apple.quarantine "$APP" 2>/dev/null; then
+            echo "quarantine flag still set" >&2
+            exit 1
+          fi
