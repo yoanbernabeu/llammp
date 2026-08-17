@@ -80,12 +80,16 @@ Llammp needs two, and neither can be worked around:
 | **Automation → Music** | driving playback (Apple Events) | dialog on first launch |
 | **Screen & System Audio Recording** | the visualizer | System Settings › Privacy & Security, by hand |
 
-The very first Apple Events call **blocks** until the dialog is answered. If Llammp shows
-`MUSIC.APP CLOSED` while Music is playing, that dialog is waiting for you somewhere.
+On first launch Llammp opens a **permissions screen** that shows the live status of both,
+requests Automation for you, and links straight to the relevant System Settings pane. It
+polls while open — ticking a box in System Settings raises no event — and closes itself
+once everything is granted. Reopen it any time with **right-click → Permissions…**
 
-macOS does **not** show a prompt for the second one on an ad-hoc signed build: it has to
-be enabled manually. Without it the audio track is delivered dead, silently, and the
-visualizer stays flat.
+Why a dedicated screen rather than a prompt: the two permissions do not behave alike.
+Automation can be requested from inside the app, but **Screen & System Audio Recording
+shows no dialog at all** on an ad-hoc signed build — it has to be ticked by hand, and
+without it the audio track is delivered dead, silently, leaving the visualizer flat with
+nothing to explain why.
 
 ## Skins
 

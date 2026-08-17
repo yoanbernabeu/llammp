@@ -22,6 +22,9 @@ contextBridge.exposeInMainWorld('llammp', {
   addSkinFromDrop: (file) => ipcRenderer.invoke('add-skin', webUtils.getPathForFile(file)),
 
   audioPermission: () => ipcRenderer.invoke('audio-permission'),
+  openSettings: (pane) => ipcRenderer.send('open-settings', pane),
+  showOnboarding: () => ipcRenderer.send('show-onboarding'),
+  closeOnboarding: () => ipcRenderer.send('close-onboarding'),
 
   // Frameless windows are moved by hand. Deltas are cumulative from the start of the
   // gesture, not incremental — that is what lets the main process snap without drift.

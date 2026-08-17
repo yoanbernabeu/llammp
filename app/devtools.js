@@ -33,6 +33,11 @@ function scheduleSnapshot ({ app, windows, helpers }) {
     const w = helpers.createEqWindow()
     w.once('ready-to-show', () => w.show())
   }
+  // Opened late on purpose: when every permission is already granted the screen closes
+  // itself a second after it appears, so an early open would never survive to capture.
+  if (process.env.LLAMMP_SNAPSHOT_ONBOARDING) {
+    setTimeout(() => helpers.createOnboardingWindow(), Math.max(200, delay - 1800))
+  }
 
   if (process.env.LLAMMP_SWITCH_SKIN) {
     setTimeout(() => {
@@ -42,8 +47,13 @@ function scheduleSnapshot ({ app, windows, helpers }) {
   }
 
   setTimeout(async () => {
-    const { win, playlistWin, eqWin } = windows()
-    const shots = [[target, win], [plTarget, playlistWin], [eqTarget, eqWin]]
+    const { win, playlistWin, eqWin, onboardingWin } = windows()
+    const shots = [
+      [target, win],
+      [plTarget, playlistWin],
+      [eqTarget, eqWin],
+      [process.env.LLAMMP_SNAPSHOT_ONBOARDING, onboardingWin]
+    ]
     for (const [file, w] of shots) {
       if (!file || !w || w.isDestroyed()) continue
       try {

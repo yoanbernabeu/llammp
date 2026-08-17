@@ -1,0 +1,117 @@
+<meta charset="utf-8">
+<title>Llammp — Permissions</title>
+<style>
+  :root {
+    --bg: #1c1f2b;
+    --panel: #252a3a;
+    --line: #3a4055;
+    --text: #e6e9f2;
+    --dim: #9aa3bd;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --accent: #4a9eff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.5 -apple-system, system-ui, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+  }
+  body { padding: 22px 24px; display: flex; flex-direction: column; }
+
+  h1 { margin: 0 0 4px; font-size: 17px; }
+  .lead { margin: 0 0 18px; color: var(--dim); }
+
+  .item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 14px;
+    margin-bottom: 12px;
+  }
+  .item.done { border-color: var(--ok); }
+
+  .head { display: flex; align-items: center; gap: 9px; }
+  .badge {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700; flex: none;
+    background: var(--warn); color: #1c1f2b;
+  }
+  .done .badge { background: var(--ok); }
+  .title { font-weight: 600; }
+  .why { margin: 7px 0 0; color: var(--dim); font-size: 12px; }
+
+  .actions { margin-top: 11px; display: flex; gap: 8px; align-items: center; }
+  .done .actions { display: none; }
+
+  button {
+    font: inherit;
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #313749;
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { background: #3a4157; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #08121f; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+
+  .state { font-size: 12px; color: var(--dim); }
+
+  footer {
+    margin-top: auto;
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--line);
+  }
+  .hint { color: var(--dim); font-size: 12px; }
+  #allDone { color: var(--ok); font-weight: 600; display: none; }
+</style>
+
+<h1>Two permissions to grant</h1>
+<p class="lead">Llammp drives Music.app and listens to system audio. macOS requires your
+consent for both, and neither can be worked around.</p>
+
+<div class="item" id="ae">
+  <div class="head">
+    <span class="badge">!</span>
+    <span class="title">Automation → Music</span>
+  </div>
+  <p class="why">Lets Llammp read what is playing and control playback. Without it the
+    window stays empty and the transport buttons do nothing.</p>
+  <div class="actions">
+    <button class="primary" id="aeAllow">Allow…</button>
+    <button id="aeSettings">Open System Settings</button>
+    <span class="state" id="aeState"></span>
+  </div>
+</div>
+
+<div class="item" id="screen">
+  <div class="head">
+    <span class="badge">!</span>
+    <span class="title">Screen &amp; System Audio Recording</span>
+  </div>
+  <p class="why">Feeds the visualizer with the sound actually coming out of your Mac.
+    Llammp never records your screen — the video track is stopped immediately.</p>
+  <div class="actions">
+    <button id="screenSettings">Open System Settings</button>
+    <span class="state" id="screenState"></span>
+  </div>
+</div>
+
+<footer>
+  <span class="hint" id="hint">This window updates on its own.</span>
+  <span id="allDone">All set</span>
+  <button id="close">Close</button>
+</footer>
+
+<script type="module" src="./onboarding.js"></script>

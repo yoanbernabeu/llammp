@@ -30,22 +30,26 @@ final class Sidecar {
         observeWorkspace()
         readCommands()
 
-        // Report startup BEFORE the first Apple Events call, not after: that first call
-        // can block for minutes on the macOS authorization dialog. A log emitted
-        // afterwards would suggest the sidecar never started, when it is really waiting
-        // for a click.
         Emitter.log("info", "sidecar started")
-        if bridge.isMusicRunning {
-            Emitter.log("info", "first Apple Events request — macOS may ask for authorization")
-        }
 
-        if bridge.isMusicRunning {
+        // Authorization is checked, and reported, before anything is asked of Music.app.
+        // Any scripting call made while consent is still pending blocks silently until
+        // the user answers a dialog they may never see.
+        emitPermission()
+
+        if !bridge.isMusicRunning {
+            emitUnavailable(reason: "not_running")
+        } else if bridge.appleEventsPermission() == "granted" {
             emitFullState(includeQueue: true)
         } else {
-            emitUnavailable(reason: "not_running")
+            emitUnavailable(reason: "no_permission")
         }
 
         startPositionTimer()
+    }
+
+    private func emitPermission() {
+        Emitter.emit(["type": "permission", "appleEvents": bridge.appleEventsPermission()])
     }
 
     // MARK: - Music.app notifications
@@ -224,8 +228,33 @@ final class Sidecar {
             return
         }
 
+        // Authorization commands are answered even when Music.app is closed or consent is
+        // still pending: they are precisely what the onboarding screen uses to get out of
+        // that state.
+        switch cmd {
+        case "checkPermission":
+            emitPermission()
+            if bridge.hasAppleEventsPermission && bridge.isMusicRunning {
+                emitFullState(includeQueue: true)
+            }
+            return
+        case "requestPermission":
+            // Blocks until the user answers, which is acceptable here: it is a direct
+            // response to them clicking "Allow".
+            let result = bridge.requestAppleEventsPermission()
+            Emitter.emit(["type": "permission", "appleEvents": result])
+            if result == "granted" { emitFullState(includeQueue: true) }
+            return
+        default:
+            break
+        }
+
         guard bridge.isMusicRunning else {
             emitUnavailable(reason: "not_running")
+            return
+        }
+        guard bridge.hasAppleEventsPermission else {
+            emitUnavailable(reason: "no_permission")
             return
         }
 

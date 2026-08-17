@@ -19,12 +19,56 @@ final class MusicBridge {
         !NSRunningApplication.runningApplications(withBundleIdentifier: Self.musicBundleId).isEmpty
     }
 
+    // MARK: - Authorization
+
+    /// Apple Events authorization status, **without ever blocking**.
+    ///
+    /// `askUserIfNeeded: false` is the whole point: the first scripting call otherwise
+    /// hangs — for minutes — on the macOS consent dialog, emitting nothing, which is
+    /// indistinguishable from a crashed sidecar. Asking first lets the app show an
+    /// onboarding screen instead of freezing.
+    func appleEventsPermission() -> String {
+        guard isMusicRunning else { return "music_not_running" }
+        guard let target = NSAppleEventDescriptor(bundleIdentifier: Self.musicBundleId).aeDesc else {
+            return "unknown"
+        }
+        switch AEDeterminePermissionToAutomateTarget(target, typeWildCard, typeWildCard, false) {
+        case noErr: return "granted"
+        case OSStatus(errAEEventNotPermitted): return "denied"
+        case OSStatus(errAEEventWouldRequireUserConsent): return "undetermined"
+        case OSStatus(procNotFound): return "music_not_running"
+        default: return "unknown"
+        }
+    }
+
+    /// Same call with `askUserIfNeeded: true`, so macOS presents the consent dialog.
+    /// Blocks until the user answers — only ever called from an explicit user action.
+    @discardableResult
+    func requestAppleEventsPermission() -> String {
+        guard isMusicRunning else { return "music_not_running" }
+        guard let target = NSAppleEventDescriptor(bundleIdentifier: Self.musicBundleId).aeDesc else {
+            return "unknown"
+        }
+        let status = AEDeterminePermissionToAutomateTarget(target, typeWildCard, typeWildCard, true)
+        return status == noErr ? "granted" : (status == OSStatus(errAEEventNotPermitted) ? "denied" : "unknown")
+    }
+
     // MARK: - Execution
+
+    /// Cached once granted; re-checked otherwise. The check itself is cheap, and skipping
+    /// it while consent is pending is what keeps the sidecar from hanging.
+    private var permissionGranted = false
+
+    var hasAppleEventsPermission: Bool {
+        if permissionGranted { return true }
+        permissionGranted = appleEventsPermission() == "granted"
+        return permissionGranted
+    }
 
     /// Runs a pre-compiled script, compiling it on first use.
     @discardableResult
     func run(_ source: String, cacheKey: String? = nil) -> NSAppleEventDescriptor? {
-        guard isMusicRunning else { return nil }
+        guard isMusicRunning, hasAppleEventsPermission else { return nil }
 
         let key = cacheKey ?? source
         let script: NSAppleScript

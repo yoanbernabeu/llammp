@@ -33,8 +33,12 @@ const DEFAULT_SKIN = process.env.LLAMMP_SKIN || 'base-2.91.wsz'
 let win = null
 let playlistWin = null
 let eqWin = null
+let onboardingWin = null
 let sidecar = null
 let currentSkin = DEFAULT_SKIN
+
+// Last known Apple Events status, as reported by the sidecar.
+let appleEventsStatus = 'unknown'
 
 // --- Windows ---------------------------------------------------------------
 
@@ -117,6 +121,52 @@ function createEqWindow () {
   return eqWin
 }
 
+/**
+ * First-run permission screen. A normal, resizable window rather than something drawn
+ * inside the 275x116 skin: two permissions cannot be explained in that space, and this
+ * screen is the one moment where clarity beats fidelity.
+ */
+function createOnboardingWindow () {
+  if (onboardingWin && !onboardingWin.isDestroyed()) return onboardingWin
+
+  onboardingWin = new BrowserWindow({
+    width: 460,
+    height: 470,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    title: 'Llammp — Permissions',
+    titleBarStyle: 'hiddenInset',
+    backgroundColor: '#1c1f2b',
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  onboardingWin.loadFile(path.join(__dirname, 'renderer', 'onboarding.html'))
+  onboardingWin.once('ready-to-show', () => onboardingWin.show())
+  onboardingWin.on('closed', () => { onboardingWin = null })
+  return onboardingWin
+}
+
+// Opened automatically at most once per run; reopening is then a menu action. Nothing is
+// more irritating than a window that keeps coming back.
+let onboardingAutoShown = false
+
+/** Shown only when something is actually missing — never in the way once set up. */
+function showOnboardingIfNeeded () {
+  if (onboardingAutoShown) return
+  const screenMissing = systemPreferences.getMediaAccessStatus('screen') !== 'granted'
+  // "music_not_running" tells us nothing about consent, so it is not treated as missing.
+  const aeMissing = appleEventsStatus === 'denied' || appleEventsStatus === 'undetermined'
+  if (!screenMissing && !aeMissing) return
+  onboardingAutoShown = true
+  createOnboardingWindow()
+}
+
 // --- Sidecar ---------------------------------------------------------------
 
 function startSidecar () {
@@ -142,7 +192,15 @@ function startSidecar () {
         const event = JSON.parse(line)
         // Surface sidecar diagnostics: without them a denied Apple Events prompt looks
         // exactly like "Music.app is closed".
-        if (event.type === 'log' || event.type === 'unavailable') console.log('[sidecar]', line)
+        if (['log', 'unavailable', 'permission'].includes(event.type)) console.log('[sidecar]', line)
+        if (event.type === 'permission') {
+          const changed = appleEventsStatus !== event.appleEvents
+          appleEventsStatus = event.appleEvents
+          // Close the screen by itself once everything is granted, instead of leaving a
+          // window the user has to dismiss.
+          if (changed && event.appleEvents === 'granted') closeOnboardingIfSatisfied()
+          showOnboardingIfNeeded()
+        }
         sendToRenderer('music-event', event)
       } catch {
         console.error('[sidecar] unreadable line:', line.slice(0, 200))
@@ -171,9 +229,19 @@ function sendCommand (cmd) {
 // All three windows, hidden ones included: a hidden window must already carry the right
 // skin when reopened.
 function sendToRenderer (channel, payload) {
-  for (const w of [win, playlistWin, eqWin]) {
+  for (const w of [win, playlistWin, eqWin, onboardingWin]) {
     if (w && !w.isDestroyed()) w.webContents.send(channel, payload)
   }
+}
+
+function closeOnboardingIfSatisfied () {
+  if (!onboardingWin || onboardingWin.isDestroyed()) return
+  if (systemPreferences.getMediaAccessStatus('screen') !== 'granted') return
+  if (appleEventsStatus !== 'granted') return
+  // Let the user see the last checkmark turn green before the window goes away.
+  setTimeout(() => {
+    if (onboardingWin && !onboardingWin.isDestroyed()) onboardingWin.close()
+  }, 1200)
 }
 
 // --- Loopback capture ------------------------------------------------------
@@ -477,6 +545,7 @@ function popupContextMenu (target) {
       click: () => toggleEq()
     },
     { type: 'separator' },
+    { label: 'Permissions…', click: () => createOnboardingWindow() },
     {
       label: 'Always on top',
       type: 'checkbox',
@@ -536,6 +605,24 @@ ipcMain.on('window-drag-end', () => { dragState = null })
 ipcMain.on('context-menu', (_e, { target }) => popupContextMenu(target))
 ipcMain.handle('toggle-playlist', () => togglePlaylist())
 ipcMain.handle('toggle-eq', () => toggleEq())
+// Deep links into the exact System Settings panes. Ticking a box there raises no event,
+// which is why the onboarding screen polls instead of waiting.
+const SETTINGS_PANES = {
+  automation: 'x-apple.systempreferences:com.apple.preference.security?Privacy_Automation',
+  screen: 'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'
+}
+
+ipcMain.on('open-settings', (_e, pane) => {
+  const url = SETTINGS_PANES[pane]
+  if (url) shell.openExternal(url)
+})
+
+ipcMain.on('close-onboarding', () => {
+  if (onboardingWin && !onboardingWin.isDestroyed()) onboardingWin.close()
+})
+
+ipcMain.on('show-onboarding', () => createOnboardingWindow())
+
 ipcMain.on('window-close', () => app.quit())
 ipcMain.on('window-minimize', () => win && win.minimize())
 
@@ -552,8 +639,8 @@ app.whenReady().then(() => {
     require('./devtools').install({
       app,
       ipcMain,
-      windows: () => ({ win, playlistWin, eqWin }),
-      helpers: { rectOf, moveContentTo, isAttached, togglePlaylist, toggleEq, createPlaylistWindow, createEqWindow, sendCommand, sendToRenderer },
+      windows: () => ({ win, playlistWin, eqWin, onboardingWin }),
+      helpers: { rectOf, moveContentTo, isAttached, togglePlaylist, toggleEq, createPlaylistWindow, createEqWindow, createOnboardingWindow, sendCommand, sendToRenderer },
       geometry: { MAIN_H }
     })
   }
