@@ -62,7 +62,11 @@ jobs:
       - name: Create archive
         id: archive
         run: |
-          NAME="Llammp-${{ steps.version.outputs.tag }}-macos-universal.zip"
+          # Fixed asset name, with no version in it. That is what makes
+          # /releases/latest/download/<name> resolvable, so the installer never has to
+          # call the GitHub API — which is rate limited to 60 requests per hour and
+          # anonymous users share that budget.
+          NAME="Llammp-macos-universal.zip"
           ditto -c -k --sequesterRsrc --keepParent \
             app/dist/Llammp-darwin-universal/Llammp.app "$NAME"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"

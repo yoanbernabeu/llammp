@@ -35,16 +35,20 @@ for tool in curl unzip; do
     command -v "$tool" >/dev/null || die "$tool is required but not installed."
 done
 
-info "Looking up the latest release..."
-API="https://api.github.com/repos/${REPO}/releases/latest"
-ASSET_URL="$(curl -fsSL "$API" \
-    | grep -o '"browser_download_url": *"[^"]*Llammp[^"]*\.zip"' \
-    | head -1 | cut -d'"' -f4 || true)"
+# Resolved through the plain download redirect, not the GitHub API: the API allows only
+# 60 anonymous requests per hour, shared across everyone on an IP, and answers 429 once
+# that runs out. This URL has no such limit.
+ASSET_URL="https://github.com/${REPO}/releases/latest/download/Llammp-macos-universal.zip"
 
-[[ -n "$ASSET_URL" ]] || die "No release asset found. Check https://github.com/${REPO}/releases"
-
-VERSION="$(basename "$(dirname "$ASSET_URL")")"
-info "Found ${VERSION}"
+info "Resolving the latest release..."
+# The redirect target carries the tag, which is the only place the version appears.
+RESOLVED="$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$ASSET_URL" 2>/dev/null || true)"
+if [[ -n "$RESOLVED" && "$RESOLVED" == *"/download/"* ]]; then
+    VERSION="$(basename "$(dirname "$RESOLVED")")"
+    info "Found ${VERSION}"
+else
+    die "No release asset found. Check https://github.com/${REPO}/releases"
+fi
 
 info "Downloading..."
 curl -fsSL --progress-bar -o "$TMP_DIR/llammp.zip" "$ASSET_URL"
