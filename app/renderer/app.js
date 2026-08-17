@@ -602,6 +602,9 @@ window.llammp.onSidecarError((e) => {
   // whatever the sidecar emitted before the renderer existed.
   window.llammp.ready()
 
+  // Capture is attempted on every launch, deliberately. For 'screen', Electron reports
+  // 'denied' both when consent was refused and when it was never asked for, so skipping
+  // the attempt would mean Llammp never appears in the System Settings list at all.
   const ok = await vis.start()
   window.llammp.reportVisualizer({ ok, error: vis.error })
 

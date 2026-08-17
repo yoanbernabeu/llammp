@@ -16,10 +16,12 @@
     "lint:fix": "standard --fix main.js devtools.js preload.js skin/*.js renderer/*.js",
     "build:sidecar": "../sidecar/build.sh",
     "build:sidecar:universal": "LLAMMP_UNIVERSAL=1 ../sidecar/build.sh",
-    "package": "npm run build:sidecar && npm run --silent pack:arm64",
-    "package:universal": "npm run build:sidecar:universal && npm run --silent pack:universal",
+    "package": "npm run build:sidecar && npm run --silent pack:arm64 && npm run --silent sign:arm64",
+    "package:universal": "npm run build:sidecar:universal && npm run --silent pack:universal && npm run --silent sign:universal",
     "pack:arm64": "electron-packager . Llammp --platform=darwin --arch=arm64 --extend-info=Info.extra.plist --extra-resource=../assets --asar.unpackDir=bin --out=dist --overwrite --ignore=\"^/dist$\"",
-    "pack:universal": "electron-packager . Llammp --platform=darwin --arch=universal --extend-info=Info.extra.plist --extra-resource=../assets --asar.unpackDir=bin --out=dist --overwrite --ignore=\"^/dist$\""
+    "pack:universal": "electron-packager . Llammp --platform=darwin --arch=universal --extend-info=Info.extra.plist --extra-resource=../assets --asar.unpackDir=bin --out=dist --overwrite --ignore=\"^/dist$\"",
+    "sign:arm64": "codesign --force --deep --sign - dist/Llammp-darwin-arm64/Llammp.app && codesign --verify --deep --strict dist/Llammp-darwin-arm64/Llammp.app",
+    "sign:universal": "codesign --force --deep --sign - dist/Llammp-darwin-universal/Llammp.app && codesign --verify --deep --strict dist/Llammp-darwin-universal/Llammp.app"
   },
   "standard": {
     "env": [
