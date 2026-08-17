@@ -23,3 +23,6 @@ spikes/m0/Music.sdef
 
 # Internal working documents: product spec, gap analysis. Kept locally, not published.
 docs/*.md
+
+# Feasibility spikes: throwaway prototypes and internal reports. Kept locally.
+spikes/

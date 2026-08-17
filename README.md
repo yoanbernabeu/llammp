@@ -4,7 +4,7 @@
 
 **A Winamp 2 client for macOS that drives Apple Music.**
 
-[![CI](https://github.com/yoanbernabeu/Llammp/actions/workflows/ci.yml/badge.svg)](https://github.com/yoanbernabeu/Llammp/actions/workflows/ci.yml)
+[![CI](https://github.com/yoanbernabeu/llamp/actions/workflows/ci.yml/badge.svg)](https://github.com/yoanbernabeu/llamp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![macOS 14.2+](https://img.shields.io/badge/macOS-14.2%2B-black?logo=apple)
 
@@ -15,6 +15,12 @@
 Llammp is not a media player. Music.app decodes and plays; Llammp displays and commands.
 All the value is in the fidelity to the Winamp of 1997 — a 275×116 window, original
 `.wsz` skins, and a visualizer driven by the actual system audio.
+
+> **Why "Llammp"?** Winamp shipped with a boast baked into its splash screen: *"Winamp,
+> it really whips the llama's ass."* Nobody ever explained the llama. The name keeps it,
+> and welds it to the *amp* that every Winamp descendant inherits — **llama + amp**. It
+> also happens to be a decent fit for a program that does no decoding of its own and just
+> makes Apple Music do the work.
 
 ```
 ┌────────────────────────┐        one JSON per line      ┌──────────────────────┐
@@ -32,7 +38,7 @@ All the value is in the fidelity to the Winamp of 1997 — a 275×116 window, or
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/Llammp/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/yoanbernabeu/llamp/main/install.sh | bash
 ```
 
 The installer pulls the latest release, drops it into `/Applications` and **clears the
