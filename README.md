@@ -22,16 +22,35 @@ All the value is in the fidelity to the Winamp of 1997 — a 275×116 window, or
 > also happens to be a decent fit for a program that does no decoding of its own and just
 > makes Apple Music do the work.
 
+```mermaid
+flowchart LR
+    subgraph llammp ["Llammp"]
+        direction TB
+        R["<b>Renderer</b><br/>skin · windows · visualizer"]
+        M["<b>Main process</b><br/>windows · sidecar · capture"]
+        S["<b>Swift sidecar</b><br/>NSAppleScript<br/>DistributedNotificationCenter"]
+        R <-->|IPC| M
+        M <-->|"JSON per line<br/>stdin / stdout"| S
+    end
+
+    A["<b>Music.app</b><br/>decodes and plays"]
+    OUT(["System audio output"])
+
+    S <-->|"Apple Events<br/>state · commands"| A
+    A --> OUT
+    OUT -.->|"loopback capture<br/>getDisplayMedia"| R
+
+    classDef app fill:#1f6feb22,stroke:#1f6feb,stroke-width:2px
+    classDef ext fill:#8957e522,stroke:#8957e5,stroke-width:2px
+    classDef audio fill:#3fb95022,stroke:#3fb950,stroke-width:2px
+    class R,M,S app
+    class A ext
+    class OUT audio
 ```
-┌────────────────────────┐        one JSON per line      ┌──────────────────────┐
-│  Electron renderer     │◄──── stdout ── stdin ────────►│  Swift sidecar       │
-│  skin, UI, visualizer  │       via the main process     │  NSAppleScript +     │
-└────────────────────────┘                                │  DistributedNotif.   │
-         │ loopback audio                                 └──────────┬───────────┘
-         │ (getDisplayMedia)                                         │ Apple Events
-         ▼                                                           ▼
-   system audio                                                 Music.app
-```
+
+The control path and the audio path are deliberately separate: sound never travels
+through the sidecar. Llammp asks Music.app what is playing, and listens to the system
+output independently.
 
 ---
 
