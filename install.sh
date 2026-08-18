@@ -41,14 +41,16 @@ done
 ASSET_URL="https://github.com/${REPO}/releases/latest/download/Llammp-macos-universal.zip"
 
 info "Resolving the latest release..."
-# The redirect target carries the tag, which is the only place the version appears.
-RESOLVED="$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$ASSET_URL" 2>/dev/null || true)"
-if [[ -n "$RESOLVED" && "$RESOLVED" == *"/download/"* ]]; then
-    VERSION="$(basename "$(dirname "$RESOLVED")")"
-    info "Found ${VERSION}"
-else
-    die "No release asset found. Check https://github.com/${REPO}/releases"
-fi
+# Read the version off the /releases/latest redirect, which lands on the tag page. The
+# asset redirect cannot be used for this: GitHub now serves assets from a signed
+# release-assets.githubusercontent.com URL that carries neither the tag nor /download/.
+RESOLVED="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+    "https://github.com/${REPO}/releases/latest" 2>/dev/null || true)"
+case "$RESOLVED" in
+    */releases/tag/*) info "Found ${RESOLVED##*/}" ;;
+    # Only cosmetic: the download below is what decides whether a release exists.
+    *) warn "Could not read the version; installing the latest release anyway." ;;
+esac
 
 info "Downloading..."
 curl -fsSL --progress-bar -o "$TMP_DIR/llammp.zip" "$ASSET_URL"
